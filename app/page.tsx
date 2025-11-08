@@ -519,11 +519,11 @@ export default function LoanCalculator() {
               <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <TrendingUp className="w-6 h-6 text-indigo-600" />
                 Grafiku i Pagesave
-                {totalMonths > 60 && (
+                {/* {totalMonths > 60 && (
                   <span className="text-sm font-normal text-gray-600">
                     (Shfaqen 5 vitet e para)
                   </span>
-                )}
+                )} */}
               </h2>
 
               {payments.length > 0 ? (
@@ -552,6 +552,7 @@ export default function LoanCalculator() {
                           </th>
                         </tr>
                       </thead>
+
                       <tbody className="divide-y divide-gray-200">
                         {payments.map((payment: any) => (
                           <tr key={payment.month} className="hover:bg-gray-50">
@@ -576,6 +577,21 @@ export default function LoanCalculator() {
                           </tr>
                         ))}
                       </tbody>
+
+                      {totalMonths > 60 && (
+                        <tfoot>
+                          <tr>
+                            <td colSpan={6} className="text-center py-3">
+                              <span className="text-sm font-normal text-gray-600">
+                                <i>
+                                  *Shfaqen max deri ne 5 vite pasi ne vazhdim
+                                  grafiku do te jete i njejte.
+                                </i>
+                              </span>
+                            </td>
+                          </tr>
+                        </tfoot>
+                      )}
                     </table>
                   </div>
                 </div>
@@ -599,7 +615,7 @@ export default function LoanCalculator() {
                     </h3>
                     <p className="text-sm text-blue-100">
                       Kontaktoni në email{" "}
-                      <b>
+                      <b className="cursor-pointer underline">
                         <i>krediaaplikacion@gmail.com</i>
                       </b>
                     </p>
@@ -607,7 +623,7 @@ export default function LoanCalculator() {
                 </div>
                 <a
                   href="mailto:krediaaplikacion@gmail.com?subject=Kërkesë%20për%20Ofertë%20Personale&body=Përshëndetje,%0D%0A%0D%0ADëshiroj%20të%20marr%20një%20ofertë%20personale%20për%20kredi.%0D%0A%0D%0AFaleminderit!"
-                  className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-bold hover:bg-blue-50 transition-colors whitespace-nowrap"
+                  className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors whitespace-nowrap"
                 >
                   Dërgo Email
                 </a>

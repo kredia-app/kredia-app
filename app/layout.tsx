@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kredia  App",
-  description: "",
+  title: "Kredia app",
+  description: "Aplikacion për llogaritjen e kredisë me grafikun e pagesave.",
 };
 
 export default function RootLayout({
