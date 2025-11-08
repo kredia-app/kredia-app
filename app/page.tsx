@@ -235,11 +235,24 @@ export default function LoanCalculator() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header Ad Space */}
-      <div className="bg-gray-200 border-2 border-dashed border-gray-400 h-24 flex items-center justify-center">
-        <p className="text-gray-600 font-semibold">
-          Hapësirë Reklamash Kryesore (728x90)
-        </p>
+      {/* Header Ad Space - WhatsApp Contact */}
+      <div className="bg-gradient-to-r from-emerald-500 to-teal-600 shadow-lg">
+        <div className="container mx-auto px-4 py-4">
+          <a
+            href="https://wa.me/355686284516?text=Përshëndetje,%20dëshiroj%20të%20vendos%20reklamë%20në%20llogaritësin%20e%20kredisë"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-3 text-white hover:opacity-90 transition-opacity"
+          >
+            <div className="text-3xl">💬</div>
+            <div>
+              <p className="font-bold text-lg">Dëshironi të Reklamoni Këtu?</p>
+              <p className="text-sm text-emerald-50">
+                Kontaktoni në <b>WhatsApp</b> për hapësira reklamash
+              </p>
+            </div>
+          </a>
+        </div>
       </div>
 
       <div className="container mx-auto px-4 py-8">
@@ -455,10 +468,15 @@ export default function LoanCalculator() {
                 ))}
               </div>
 
-              {/* Mobile Ad Space */}
-              <div className="mt-6 bg-gray-200 border-2 border-dashed border-gray-400 h-24 flex items-center justify-center lg:hidden">
-                <p className="text-gray-600 font-semibold">
-                  Reklamë Mobile (320x100)
+              {/* Mobile Ad Space - Tip */}
+              <div className="mt-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg shadow-lg p-5 text-white lg:hidden">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="text-2xl">⚡</div>
+                  <h3 className="text-lg font-bold">Këshillë e Shpejtë</h3>
+                </div>
+                <p className="text-sm leading-relaxed">
+                  Pagesa paraprake e 20% të kredisë ul normën e interesit dhe ju
+                  kursen mijëra euro!
                 </p>
               </div>
             </div>
@@ -468,29 +486,29 @@ export default function LoanCalculator() {
           <div className="lg:col-span-1">
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 gap-4 mb-6">
-              <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg shadow-lg p-6 text-white">
-                <p className="text-indigo-100 text-sm font-semibold mb-1">
+              <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+                <p className="text-gray-600 text-sm font-semibold mb-1">
                   Pagesa Totale
                 </p>
-                <p className="text-3xl font-bold">
+                <p className="text-3xl font-bold text-gray-900">
                   {formatCurrency(summary.totalPayment)}
                 </p>
               </div>
 
-              <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
-                <p className="text-purple-100 text-sm font-semibold mb-1">
+              <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-orange-500">
+                <p className="text-gray-600 text-sm font-semibold mb-1">
                   Interesi Total
                 </p>
-                <p className="text-3xl font-bold">
+                <p className="text-3xl font-bold text-gray-900">
                   {formatCurrency(summary.totalInterest)}
                 </p>
               </div>
 
-              <div className="bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg shadow-lg p-6 text-white">
-                <p className="text-pink-100 text-sm font-semibold mb-1">
+              <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+                <p className="text-gray-600 text-sm font-semibold mb-1">
                   Pagesa Mujore Mesatare
                 </p>
-                <p className="text-3xl font-bold">
+                <p className="text-3xl font-bold text-gray-900">
                   {formatCurrency(summary.avgMonthlyPayment)}
                 </p>
               </div>
@@ -570,21 +588,50 @@ export default function LoanCalculator() {
               )}
             </div>
 
-            {/* Bottom Ad Space */}
-            <div className="mt-6 bg-gray-200 border-2 border-dashed border-gray-400 h-32 flex items-center justify-center">
-              <p className="text-gray-600 font-semibold">
-                Reklamë Poshtë (728x90)
-              </p>
+            {/* Bottom Ad Space - Email Contact */}
+            <div className="mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-lg p-6 text-white">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="text-3xl">💰</div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-1">
+                      Dëshironi të reklamoni?
+                    </h3>
+                    <p className="text-sm text-blue-100">
+                      Kontaktoni në email{" "}
+                      <b>
+                        <i>krediaaplikacion@gmail.com</i>
+                      </b>
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href="mailto:krediaaplikacion@gmail.com?subject=Kërkesë%20për%20Ofertë%20Personale&body=Përshëndetje,%0D%0A%0D%0ADëshiroj%20të%20marr%20një%20ofertë%20personale%20për%20kredi.%0D%0A%0D%0AFaleminderit!"
+                  className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-bold hover:bg-blue-50 transition-colors whitespace-nowrap"
+                >
+                  Dërgo Email
+                </a>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Footer Ad Space */}
-      <div className="mt-8 bg-gray-200 border-2 border-dashed border-gray-400 h-24 flex items-center justify-center">
-        <p className="text-gray-600 font-semibold">
-          Hapësirë Reklamash Fund Faqeje (728x90)
-        </p>
+      {/* Footer Ad Space - Educational Tip */}
+      <div className="mt-8 bg-gradient-to-r from-orange-500 to-red-500 shadow-lg">
+        <div className="container mx-auto px-4 py-6">
+          <div className="text-center text-white">
+            <div className="text-3xl mb-2">💡</div>
+            <h3 className="text-xl font-bold mb-2">Dini që?</h3>
+            <p className="text-sm max-w-3xl mx-auto leading-relaxed">
+              Normat promocionale që bankat ofrojnë (1-2% për vitet e para) mund
+              të ju kursejnë deri në{" "}
+              <span className="font-bold">€2,000-3,000</span> gjatë jetës së
+              kredisë. Përdorni "Periudha të Personalizuara Interesi" për të
+              simuluar këto oferta!
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
