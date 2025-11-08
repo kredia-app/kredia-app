@@ -1,34 +1,69 @@
-"use client"
-import React, { useState, useEffect } from 'react';
-import { Calculator, TrendingUp, Calendar, DollarSign, Percent } from 'lucide-react';
+"use client";
+import React, { useState, useEffect } from "react";
+import {
+  Calculator,
+  TrendingUp,
+  Calendar,
+  DollarSign,
+  Percent,
+  Info,
+} from "lucide-react";
 
 export default function LoanCalculator() {
-  const [loanAmount, setLoanAmount] = useState('100000');
-  const [currency, setCurrency] = useState('EUR');
-  const [periodValue, setPeriodValue] = useState('20');
-  const [periodUnit, setPeriodUnit] = useState('years');
+  const euribor_data = {
+    "2015-01-01": 0.04,
+    "2016-01-01": -0.19,
+    "2017-01-01": -0.33,
+    "2018-01-01": -0.31,
+    "2019-01-01": -0.31,
+    "2020-01-01": -0.37,
+    "2021-01-01": -0.53,
+    "2022-01-01": -0.5,
+    "2023-01-01": 0.4,
+    "2024-01-01": 2.19,
+  };
+
+  const bond_data = {
+    "2015-01-01": 3.5,
+    "2016-01-01": 3.45,
+    "2017-01-01": 3.4,
+    "2018-01-01": 3.25,
+    "2019-01-01": 3.15,
+    "2020-01-01": 3.1,
+    "2021-01-01": 3.0,
+    "2022-01-01": 3.3,
+    "2023-01-01": 4.0,
+    "2024-01-01": 4.5,
+  };
+
+  const [loanAmount, setLoanAmount] = useState("100000");
+  const [currency, setCurrency] = useState("EUR");
+  const [periodValue, setPeriodValue] = useState("20");
+  const [periodUnit, setPeriodUnit] = useState("years");
   const [totalMonths, setTotalMonths] = useState(240);
-  const [baseRate, setBaseRate] = useState('3');
-  const [euriborRate, setEuriborRate] = useState('2.5');
-  const rateType = currency === 'ALL' ? 'treasury' : 'euribor';
-  
+  const [baseRate, setBaseRate] = useState("3");
+  const [euriborRate, setEuriborRate] = useState("2.5");
+  const rateType = currency === "ALL" ? "treasury" : "euribor";
+
   const [customPeriods, setCustomPeriods] = useState([
-    { months: '12', rate: '1', enabled: true },
-    { months: '12', rate: '2', enabled: false },
-    { months: '12', rate: '2.5', enabled: false }
+    { months: "12", rate: "1", enabled: true },
+    { months: "12", rate: "2", enabled: false },
+    { months: "12", rate: "2.5", enabled: false },
   ]);
-  
+
+  const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
+
   const [payments, setPayments] = useState([]);
   const [summary, setSummary] = useState({
     totalPayment: 0,
     totalInterest: 0,
-    avgMonthlyPayment: 0
+    avgMonthlyPayment: 0,
   });
 
   useEffect(() => {
     const pVal = parseFloat(periodValue);
     if (!isNaN(pVal) && pVal > 0) {
-      const months = periodUnit === 'years' ? pVal * 12 : pVal;
+      const months = periodUnit === "years" ? pVal * 12 : pVal;
       setTotalMonths(Math.round(months));
     }
   }, [periodValue, periodUnit]);
@@ -51,79 +86,104 @@ export default function LoanCalculator() {
     const eRate = parseFloat(euriborRate);
 
     // Don't calculate if any required field is empty or invalid
-    if (!loanAmount || !periodValue || !baseRate || !euriborRate || 
-        isNaN(loanAmt) || isNaN(bRate) || isNaN(eRate) || 
-        loanAmt <= 0 || totalMonths <= 0) {
+    if (
+      !loanAmount ||
+      !periodValue ||
+      !baseRate ||
+      !euriborRate ||
+      isNaN(loanAmt) ||
+      isNaN(bRate) ||
+      isNaN(eRate) ||
+      loanAmt <= 0 ||
+      totalMonths <= 0
+    ) {
       setPayments([]);
       setSummary({
         totalPayment: 0,
         totalInterest: 0,
-        avgMonthlyPayment: 0
+        avgMonthlyPayment: 0,
       });
       return;
     }
 
     let remainingBalance = loanAmt;
     const paymentsArray: any = [];
+    const displayPaymentsArray: any = [];
     let currentMonth = 1;
-    
+    const maxDisplayMonths = 60; // Limit table display to 5 years
+
     const getInterestRate = (month: number) => {
       let cumulativeMonths = 0;
-      
+
       for (let period of customPeriods) {
         if (!period.enabled) continue;
         const pMonths = parseFloat(period.months);
         const pRate = parseFloat(period.rate);
         if (isNaN(pMonths) || isNaN(pRate)) continue;
-        
+
         cumulativeMonths += pMonths;
         if (month <= cumulativeMonths) {
           return pRate / 100 / 12;
         }
       }
-      
-      const variableRate = rateType === 'euribor' ? eRate : bRate;
+
+      const variableRate = eRate; // rateType === "euribor" ? eRate : bRate;
       return (bRate + variableRate) / 100 / 12;
     };
 
     while (remainingBalance > 0.01 && currentMonth <= totalMonths) {
       const monthlyRate = getInterestRate(currentMonth);
       const remainingMonths = totalMonths - currentMonth + 1;
-      
+
       let monthlyPayment;
       if (monthlyRate === 0) {
         monthlyPayment = remainingBalance / remainingMonths;
       } else {
-        monthlyPayment = remainingBalance * (monthlyRate * Math.pow(1 + monthlyRate, remainingMonths)) / 
-                        (Math.pow(1 + monthlyRate, remainingMonths) - 1);
+        monthlyPayment =
+          (remainingBalance *
+            (monthlyRate * Math.pow(1 + monthlyRate, remainingMonths))) /
+          (Math.pow(1 + monthlyRate, remainingMonths) - 1);
       }
-      
+
       const interestPayment = remainingBalance * monthlyRate;
       const principalPayment = monthlyPayment - interestPayment;
-      
+
       remainingBalance -= principalPayment;
-      
-      paymentsArray.push({
+
+      const paymentData = {
         month: currentMonth,
         payment: monthlyPayment,
         principal: principalPayment,
         interest: interestPayment,
         balance: Math.max(0, remainingBalance),
-        rate: monthlyRate * 12 * 100
-      });
-      
+        rate: monthlyRate * 12 * 100,
+      };
+
+      paymentsArray.push(paymentData);
+
+      // Only add to display array if within first 5 years
+      if (currentMonth <= maxDisplayMonths) {
+        displayPaymentsArray.push(paymentData);
+      }
+
       currentMonth++;
     }
-    
-    setPayments(paymentsArray);
-    
-    const totalPayment = paymentsArray.reduce((sum: any, p: { payment: any; }) => sum + p.payment, 0);
-    const totalInterest = paymentsArray.reduce((sum: any, p: { interest: any; }) => sum + p.interest, 0);
-    
+
+    setPayments(displayPaymentsArray);
+
+    const totalPayment = paymentsArray.reduce(
+      (sum: any, p: { payment: any }) => sum + p.payment,
+      0
+    );
+    const totalInterest = paymentsArray.reduce(
+      (sum: any, p: { interest: any }) => sum + p.interest,
+      0
+    );
+
     setSummary({
       totalPayment,
       totalInterest,
-      avgMonthlyPayment: totalPayment / paymentsArray.length || 0
+      avgMonthlyPayment: totalPayment / paymentsArray.length || 0,
     });
   };
 
@@ -132,39 +192,71 @@ export default function LoanCalculator() {
   }, [loanAmount, totalMonths, baseRate, euriborRate, rateType, customPeriods]);
 
   const formatCurrency = (amount: number | bigint) => {
-    const currencyCode = currency === 'ALL' ? 'ALL' : 'EUR';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
+    const currencyCode = currency === "ALL" ? "ALL" : "EUR";
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
       currency: currencyCode,
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     }).format(amount);
   };
+
+  const tooltips: Record<string, string> = {
+    customPeriods:
+      "Shumë banka ofrojnë norma speciale më të ulëta për vitet e para (p.sh. 1% për vitin e parë). Këtu mund t'i konfiguroni ato.",
+  };
+
+  const getHistoricalRates = () => {
+    const data = rateType === "euribor" ? euribor_data : bond_data;
+    return Object.entries(data).map(([year, rate]) => ({
+      year: year.substring(0, 4),
+      rate: rate,
+    }));
+  };
+
+  const InfoTooltip = ({ id, text }: { id: string; text: string }) => (
+    <div className="relative inline-block ml-2">
+      <button
+        type="button"
+        onClick={() => setActiveTooltip(activeTooltip === id ? null : id)}
+        onBlur={() => setTimeout(() => setActiveTooltip(null), 200)}
+        className="text-indigo-600 hover:text-indigo-800 focus:outline-none"
+      >
+        <Info className="w-4 h-4" />
+      </button>
+      {activeTooltip === id && (
+        <div className="absolute z-10 w-64 p-3 mt-2 text-sm text-white bg-gray-800 rounded-lg shadow-lg -left-28">
+          <div className="absolute -top-2 left-32 w-4 h-4 bg-gray-800 transform rotate-45"></div>
+          {text}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header Ad Space */}
       <div className="bg-gray-200 border-2 border-dashed border-gray-400 h-24 flex items-center justify-center">
-        <p className="text-gray-600 font-semibold">Hapësirë Reklamash Kryesore (728x90)</p>
+        <p className="text-gray-600 font-semibold">
+          Hapësirë Reklamash Kryesore (728x90)
+        </p>
       </div>
 
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Calculator className="w-10 h-10 text-indigo-600" />
-            <h1 className="text-4xl font-bold text-gray-800">Llogaritësi i Kredisë</h1>
+            <h1 className="text-4xl font-bold text-gray-800">
+              Llogaritësi i Kredisë
+            </h1>
           </div>
-          <p className="text-gray-600">Llogaritni pagesat mujore të kredisë tuaj me periudha interesi të personalizuara</p>
+          <p className="text-gray-600">
+            Llogaritni pagesat mujore të kredisë tuaj me periudha interesi të
+            personalizuara
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Sidebar Ad */}
-          <div className="hidden lg:block">
-            <div className="bg-gray-200 border-2 border-dashed border-gray-400 h-96 flex items-center justify-center sticky top-4">
-              <p className="text-gray-600 font-semibold text-center">Reklamë Anësore<br/>(300x600)</p>
-            </div>
-          </div>
-
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
           {/* Main Content */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
@@ -183,20 +275,21 @@ export default function LoanCalculator() {
                       type="number"
                       value={loanAmount}
                       onChange={(e) => setLoanAmount(e.target.value)}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      className="text-gray-900 flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none"
                       placeholder="Shuma"
                     />
                     <select
                       value={currency}
                       onChange={(e) => setCurrency(e.target.value)}
-                      className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-semibold"
+                      className="text-gray-900 w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none font-semibold"
                     >
                       <option value="EUR">EUR</option>
                       <option value="ALL">Lekë</option>
                     </select>
                   </div>
                   <p className="text-sm text-gray-500 mt-1">
-                    Norma referuese: {rateType === 'euribor' ? 'Euribor' : 'Bono Thesari'}
+                    Norma referuese:{" "}
+                    {rateType === "euribor" ? "Euribor" : "Bono Thesari"}
                   </p>
                 </div>
 
@@ -207,15 +300,16 @@ export default function LoanCalculator() {
                   <div className="flex gap-3">
                     <input
                       type="number"
+                      maxLength={3}
                       value={periodValue}
                       onChange={(e) => setPeriodValue(e.target.value)}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      className="text-gray-900 flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none"
                       placeholder="Kohëzgjatja"
                     />
                     <select
                       value={periodUnit}
                       onChange={(e) => setPeriodUnit(e.target.value)}
-                      className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-semibold"
+                      className="text-gray-900 w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none font-semibold"
                     >
                       <option value="years">Vjet</option>
                       <option value="months">Muaj</option>
@@ -223,22 +317,51 @@ export default function LoanCalculator() {
                   </div>
                   {periodValue && !isNaN(parseFloat(periodValue)) && (
                     <p className="text-sm text-gray-500 mt-1">
-                      {periodUnit === 'years' ? `${totalMonths} muaj` : `${(totalMonths / 12).toFixed(1)} vjet`}
+                      {periodUnit === "years"
+                        ? `${totalMonths} muaj`
+                        : `${(totalMonths / 12).toFixed(1)} vjet`}
                     </p>
                   )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Norma {rateType === 'euribor' ? 'Euribor' : 'e Bonos së Thesarit'} (%)
+                    Norma{" "}
+                    {rateType === "euribor" ? "Euribor" : "e Bonos së Thesarit"}{" "}
+                    (%)
                   </label>
                   <input
                     type="number"
                     step="0.1"
                     value={euriborRate}
                     onChange={(e) => setEuriborRate(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="text-gray-900 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none"
                   />
+                  <div className="mt-2 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                    <p className="text-xs font-semibold text-gray-700 mb-2">
+                      📊 Historiku i normave (10 vitet e fundit):
+                    </p>
+                    <div className="grid grid-cols-5 gap-2">
+                      {getHistoricalRates().map(({ year, rate }) => (
+                        <div key={year} className="text-center">
+                          <div className="text-xs font-semibold text-gray-600">
+                            {year}
+                          </div>
+                          <div
+                            className={`text-sm font-bold ${
+                              rate < 0
+                                ? "text-red-600"
+                                : rate < 2
+                                ? "text-green-600"
+                                : "text-orange-600"
+                            }`}
+                          >
+                            {rate}%
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 <div>
@@ -250,13 +373,20 @@ export default function LoanCalculator() {
                     step="0.1"
                     value={baseRate}
                     onChange={(e) => setBaseRate(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="text-gray-900 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none"
                   />
-                  {baseRate && euriborRate && !isNaN(parseFloat(baseRate)) && !isNaN(parseFloat(euriborRate)) && (
-                    <p className="text-sm text-gray-500 mt-1">
-                      Norma variabël: {baseRate}% + {euriborRate}% = {(parseFloat(baseRate) + parseFloat(euriborRate)).toFixed(2)}%
-                    </p>
-                  )}
+                  {baseRate &&
+                    euriborRate &&
+                    !isNaN(parseFloat(baseRate)) &&
+                    !isNaN(parseFloat(euriborRate)) && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        Norma variabël: {baseRate}% + {euriborRate}% ={" "}
+                        {(
+                          parseFloat(baseRate) + parseFloat(euriborRate)
+                        ).toFixed(2)}
+                        %
+                      </p>
+                    )}
                 </div>
               </div>
 
@@ -264,11 +394,20 @@ export default function LoanCalculator() {
                 <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-indigo-600" />
                   Periudha të Personalizuara Interesi
+                  <InfoTooltip
+                    id="customPeriods"
+                    text={tooltips.customPeriods}
+                  />
                 </h3>
-                <p className="text-sm text-gray-600 mb-4">Konfiguroni norma speciale për 3 vitet e para</p>
+                <p className="text-sm text-gray-600 mb-4">
+                  Konfiguroni norma speciale për 3 vitet e para
+                </p>
 
                 {customPeriods.map((period, index) => (
-                  <div key={index} className="mb-4 p-4 border border-gray-200 rounded-lg">
+                  <div
+                    key={index}
+                    className="mb-4 p-4 border border-gray-200 rounded-lg"
+                  >
                     <div className="flex items-center mb-3">
                       <input
                         type="checkbox"
@@ -280,26 +419,34 @@ export default function LoanCalculator() {
                         Viti {index + 1} Normë Speciale
                       </label>
                     </div>
-                    
+
                     {period.enabled && (
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs text-gray-600 mb-1">Muaj</label>
+                          <label className="block text-xs text-gray-600 mb-1">
+                            Muaj
+                          </label>
                           <input
                             type="number"
                             value={period.months}
-                            onChange={(e) => updatePeriod(index, 'months', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                            onChange={(e) =>
+                              updatePeriod(index, "months", e.target.value)
+                            }
+                            className="text-gray-900 w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none text-sm"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-600 mb-1">Norma (%)</label>
+                          <label className="block text-xs text-gray-600 mb-1">
+                            Norma (%)
+                          </label>
                           <input
                             type="number"
                             step="0.1"
                             value={period.rate}
-                            onChange={(e) => updatePeriod(index, 'rate', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                            onChange={(e) =>
+                              updatePeriod(index, "rate", e.target.value)
+                            }
+                            className="text-gray-900 w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none text-sm"
                           />
                         </div>
                       </div>
@@ -310,7 +457,9 @@ export default function LoanCalculator() {
 
               {/* Mobile Ad Space */}
               <div className="mt-6 bg-gray-200 border-2 border-dashed border-gray-400 h-24 flex items-center justify-center lg:hidden">
-                <p className="text-gray-600 font-semibold">Reklamë Mobile (320x100)</p>
+                <p className="text-gray-600 font-semibold">
+                  Reklamë Mobile (320x100)
+                </p>
               </div>
             </div>
           </div>
@@ -320,18 +469,30 @@ export default function LoanCalculator() {
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 gap-4 mb-6">
               <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg shadow-lg p-6 text-white">
-                <p className="text-indigo-100 text-sm font-semibold mb-1">Pagesa Totale</p>
-                <p className="text-3xl font-bold">{formatCurrency(summary.totalPayment)}</p>
+                <p className="text-indigo-100 text-sm font-semibold mb-1">
+                  Pagesa Totale
+                </p>
+                <p className="text-3xl font-bold">
+                  {formatCurrency(summary.totalPayment)}
+                </p>
               </div>
-              
+
               <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
-                <p className="text-purple-100 text-sm font-semibold mb-1">Interesi Total</p>
-                <p className="text-3xl font-bold">{formatCurrency(summary.totalInterest)}</p>
+                <p className="text-purple-100 text-sm font-semibold mb-1">
+                  Interesi Total
+                </p>
+                <p className="text-3xl font-bold">
+                  {formatCurrency(summary.totalInterest)}
+                </p>
               </div>
-              
+
               <div className="bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg shadow-lg p-6 text-white">
-                <p className="text-pink-100 text-sm font-semibold mb-1">Pagesa Mujore Mesatare</p>
-                <p className="text-3xl font-bold">{formatCurrency(summary.avgMonthlyPayment)}</p>
+                <p className="text-pink-100 text-sm font-semibold mb-1">
+                  Pagesa Mujore Mesatare
+                </p>
+                <p className="text-3xl font-bold">
+                  {formatCurrency(summary.avgMonthlyPayment)}
+                </p>
               </div>
             </div>
 
@@ -340,26 +501,45 @@ export default function LoanCalculator() {
               <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <TrendingUp className="w-6 h-6 text-indigo-600" />
                 Grafiku i Pagesave
+                {totalMonths > 60 && (
+                  <span className="text-sm font-normal text-gray-600">
+                    (Shfaqen 5 vitet e para)
+                  </span>
+                )}
               </h2>
-              
+
               {payments.length > 0 ? (
                 <div className="overflow-x-auto">
                   <div className="max-h-96 overflow-y-auto">
                     <table className="w-full text-sm">
                       <thead className="bg-gray-50 sticky top-0">
                         <tr>
-                          <th className="px-4 py-3 text-left font-semibold text-gray-700">Muaji</th>
-                          <th className="px-4 py-3 text-right font-semibold text-gray-700">Pagesa</th>
-                          <th className="px-4 py-3 text-right font-semibold text-gray-700">Kredia</th>
-                          <th className="px-4 py-3 text-right font-semibold text-gray-700">Interesi</th>
-                          <th className="px-4 py-3 text-right font-semibold text-gray-700">Norma</th>
-                          <th className="px-4 py-3 text-right font-semibold text-gray-700">Bilanci</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                            Muaji
+                          </th>
+                          <th className="px-4 py-3 text-right font-semibold text-gray-700">
+                            Pagesa
+                          </th>
+                          <th className="px-4 py-3 text-right font-semibold text-gray-700">
+                            Kredia
+                          </th>
+                          <th className="px-4 py-3 text-right font-semibold text-gray-700">
+                            Interesi
+                          </th>
+                          <th className="px-4 py-3 text-right font-semibold text-gray-700">
+                            Norma
+                          </th>
+                          <th className="px-4 py-3 text-right font-semibold text-gray-700">
+                            Bilanci
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
-                        {payments.map((payment :any) => (
+                        {payments.map((payment: any) => (
                           <tr key={payment.month} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 text-gray-700 font-medium">{payment.month}</td>
+                            <td className="px-4 py-3 text-gray-700 font-medium">
+                              {payment.month}
+                            </td>
                             <td className="px-4 py-3 text-right text-gray-900 font-semibold">
                               {formatCurrency(payment.payment)}
                             </td>
@@ -383,14 +563,18 @@ export default function LoanCalculator() {
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">
-                  <p>Plotësoni të gjitha fushat për të parë grafikun e pagesave</p>
+                  <p>
+                    Plotësoni të gjitha fushat për të parë grafikun e pagesave
+                  </p>
                 </div>
               )}
             </div>
 
             {/* Bottom Ad Space */}
             <div className="mt-6 bg-gray-200 border-2 border-dashed border-gray-400 h-32 flex items-center justify-center">
-              <p className="text-gray-600 font-semibold">Reklamë Poshtë (728x90)</p>
+              <p className="text-gray-600 font-semibold">
+                Reklamë Poshtë (728x90)
+              </p>
             </div>
           </div>
         </div>
@@ -398,7 +582,9 @@ export default function LoanCalculator() {
 
       {/* Footer Ad Space */}
       <div className="mt-8 bg-gray-200 border-2 border-dashed border-gray-400 h-24 flex items-center justify-center">
-        <p className="text-gray-600 font-semibold">Hapësirë Reklamash Fund Faqeje (728x90)</p>
+        <p className="text-gray-600 font-semibold">
+          Hapësirë Reklamash Fund Faqeje (728x90)
+        </p>
       </div>
     </div>
   );
