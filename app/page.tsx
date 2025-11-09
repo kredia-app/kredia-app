@@ -239,7 +239,7 @@ export default function LoanCalculator() {
       <div className="bg-gradient-to-r from-emerald-500 to-teal-600 shadow-lg">
         <div className="container mx-auto px-4 py-4">
           <a
-            href="https://wa.me/355686284516?text=Përshëndetje,%20dëshiroj%20të%20vendos%20reklamë%20në%20llogaritësin%20e%20kredisë"
+            href="mailto:krediaaplikacion@gmail.com?subject=Kërkesë%20për%20Ofertë%20Personale&body=Përshëndetje,%0D%0A%0D%0ADëshiroj%20të%20marr%20një%20ofertë%20personale%20për%20kredi.%0D%0A%0D%0AFaleminderit!"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-3 text-white hover:opacity-90 transition-opacity"
@@ -248,7 +248,11 @@ export default function LoanCalculator() {
             <div>
               <p className="font-bold text-lg">Dëshironi të Reklamoni Këtu?</p>
               <p className="text-sm text-emerald-50">
-                Kontaktoni në <b>WhatsApp</b> për hapësira reklamash
+                Kontaktoni në email{" "}
+                <b className="cursor-pointer underline">
+                  <i>krediaaplikacion@gmail.com</i>
+                </b>{" "}
+                për hapësira reklamash
               </p>
             </div>
           </a>
@@ -611,7 +615,7 @@ export default function LoanCalculator() {
                   <div className="text-3xl">💰</div>
                   <div>
                     <h3 className="text-xl font-bold mb-1">
-                      Dëshironi të reklamoni?
+                      Dëshironi të reklamoni këtu?
                     </h3>
                     <p className="text-sm text-blue-100">
                       Kontaktoni në email{" "}
