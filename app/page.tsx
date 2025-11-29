@@ -264,7 +264,7 @@ export default function LoanCalculator() {
           <div className="flex items-center justify-center gap-2 mb-4">
             <Calculator className="w-10 h-10 text-indigo-600" />
             <h1 className="text-4xl font-bold text-gray-800">
-              Llogaritësi i Kredisë
+              Llogarit këstin e kredisë
             </h1>
           </div>
           <p className="text-gray-600">
